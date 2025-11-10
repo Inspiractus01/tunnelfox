@@ -10,39 +10,47 @@ OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(uname -m)
 
 # map to asset names from GitHub release
-if [ "$OS" = "linux" ] && [ "$ARCH" = "x86_64" ]; then
-  ASSET="tunnelfox-linux-amd64"
-elif [ "$OS" = "darwin" ] && [ "$ARCH" = "arm64" ]; then
-  ASSET="tunnelfox-macos-arm64"
-else
-  echo "unsupported OS/arch: $OS $ARCH"
-  exit 1
-fi
+case "${OS}-${ARCH}" in
+  linux-x86_64)
+    ASSET="tunnelfox-linux-amd64"
+    ;;
+  linux-aarch64|linux-arm64)
+    ASSET="tunnelfox-linux-arm64"
+    ;;
+  darwin-arm64)
+    ASSET="tunnelfox-macos-arm64"
+    ;;
+  *)
+    echo "unsupported OS/arch: ${OS} ${ARCH}"
+    exit 1
+    ;;
+esac
 
-echo "🦊 TunnelFox auto-installer"
-echo "→ repo: $REPO_USER/$REPO_NAME"
-echo "→ asset: $ASSET"
+echo "=== TunnelFox auto-installer ==="
+echo "repo: ${REPO_USER}/${REPO_NAME}"
+echo "asset: ${ASSET}"
+echo
 
-API_URL="https://api.github.com/repos/$REPO_USER/$REPO_NAME/releases/latest"
+API_URL="https://api.github.com/repos/${REPO_USER}/${REPO_NAME}/releases/latest"
 
-DOWNLOAD_URL=$(curl -s "$API_URL" \
+DOWNLOAD_URL=$(curl -s "${API_URL}" \
   | grep "browser_download_url" \
-  | grep "$ASSET" \
+  | grep "${ASSET}" \
   | cut -d '"' -f 4 \
   | head -n 1)
 
-if [ -z "$DOWNLOAD_URL" ]; then
-  echo "Could not find asset $ASSET in latest release."
-  echo "   Make sure it is uploaded to GitHub Releases."
+if [ -z "${DOWNLOAD_URL}" ]; then
+  echo "Could not find asset ${ASSET} in latest release."
+  echo "Make sure it is uploaded to GitHub Releases."
   exit 1
 fi
 
-echo "📦 Downloading $DOWNLOAD_URL"
-curl -L "$DOWNLOAD_URL" -o tunnelfox
+echo "[*] Downloading ${DOWNLOAD_URL}"
+curl -L "${DOWNLOAD_URL}" -o tunnelfox
 chmod +x tunnelfox
 
-echo "🛠  Installing to $INSTALL_DIR/tunnelfox (sudo may be required)"
-sudo mv tunnelfox "$INSTALL_DIR/tunnelfox"
+echo "[*] Installing to ${INSTALL_DIR}/tunnelfox ..."
+sudo mv tunnelfox "${INSTALL_DIR}/tunnelfox"
 
-echo "✅ Installed!"
+echo "[OK] Installed."
 tunnelfox version || true
