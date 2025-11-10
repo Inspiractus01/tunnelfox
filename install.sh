@@ -44,5 +44,5 @@ chmod +x tunnelfox
 echo "🛠  Installing to $INSTALL_DIR/tunnelfox (sudo may be required)"
 sudo mv tunnelfox "$INSTALL_DIR/tunnelfox"
 
-echo "✅ Installed! "
+echo "✅ Installed!"
 tunnelfox version || true
